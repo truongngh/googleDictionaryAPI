@@ -1,0 +1,4 @@
+pipeline:
+  codecov:
+    image: robertstettner/drone-codecov
+    secrets: [ codecov_token ]
