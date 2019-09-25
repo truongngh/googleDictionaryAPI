@@ -29,8 +29,9 @@ app.get("/", function(req, res) {
             };
             
         if (queriedLanguage !== 'en') {
-            url = `https://www.google.co.in/search?hl=${ queriedLanguage }&q=${ replaceDefine[queriedLanguage] ? replaceDefine[queriedLanguage] : 'define' }+${ queriedWord }`;
+            url = `https://www.google.com/search?hl=${ queriedLanguage }&q=${ replaceDefine[queriedLanguage] ? replaceDefine[queriedLanguage] : 'define' }+${ queriedWord }`;
             url = encodeURI(url);
+            console.log(url);
             request({
                 method: 'GET',
                 url: url,
@@ -46,7 +47,7 @@ app.get("/", function(req, res) {
                 const $ = cheerio.load(body);
 
                 var dictionary = {},
-                    word = $("div.dDoNo span").first().text(),
+                    word = $("div.DgZBFd span").first().text(),
                     meaning,
                     mainPart,
                     definitions;
@@ -56,58 +57,17 @@ app.get("/", function(req, res) {
                     return res.status(404).sendFile(path.join(__dirname + '/views/404.html'));
                 }
 
-                dictionary.word = $("div.dDoNo span").first().text();
+                dictionary.word = $("div.DgZBFd span").first().text();
 
-                if (!$('.lr_dct_spkr.lr_dct_spkr_off audio')) {
-                    dictionary.pronunciation = "https:" + $('.lr_dct_spkr.lr_dct_spkr_off audio')[0].attribs.src;
+                if ($('.lr_container.mod.yc7KLc audio')) {
+                    dictionary.pronunciation = "https:" + $('.lr_container.mod.yc7KLc audio').first().find('source')[0].attribs.src;
                     dictionary.pronunciation = dictionary.pronunciation.replace('--_gb', '--_us');
                 }
 
                 dictionary.phonetic = [];
-                $(".lr_dct_ph.XpoqFe").first().find('span').each(function(i, element) {
+                $(".S23sjd .XpoqFe").first().find('span').each(function(i, element) {
                     dictionary.phonetic.push($(this).text());
                 });
-
-                dictionary.meaning = {};
-
-                meaning = {},
-                definitions = $(".lr_dct_ent.vmod.XpoqFe"),
-                mainPart = definitions.first().find(".lr_dct_sf_h");
-
-
-                    mainPart.each(function(i, element) {
-                        
-                        var type = $(this).find('i').text(),
-                            selector = $(".lr_dct_sf_sens").eq(i).find("div[style='margin-left:20px'] > .PNlCoe");
-
-                        meaning[type] = [];
-
-                        selector.each(function(i, element) {
-                            var newDefinition = {},
-                                synonymsText,
-                                synonyms,
-                                example;
-
-                            newDefinition.definition = $(this).find("div[data-dobid='dfn']").text();
-                            example = $(this).find("span.vmod .vk_gy").text();
-                            synonymsText = $(this).find("div.vmod td.lr_dct_nyms_ttl + td > span:not([data-log-string='synonyms-more-click'])").text();
-
-                            synonyms = synonymsText.split(/,|;/).filter(synonym => synonym != ' ' && synonym).map(function(item) {
-                                return item.trim();
-                            });
-
-                            if (example.length > 0)
-                                newDefinition.example = example.replace(/(^")|("$)/g, '');
-
-                            if (synonyms.length > 0)
-                                newDefinition.synonyms = synonyms;
-
-                            meaning[type].push(newDefinition);
-                        });
-
-                    });
-
-                dictionary.meaning = meaning;
 
                 Object.keys(dictionary).forEach(key => {
                     (Array.isArray(dictionary[key]) && !dictionary[key].length) && delete dictionary[key];
@@ -244,5 +204,5 @@ app.get("/", function(req, res) {
 });
 
 app.listen(process.env.PORT, process.env.IP, function() {
-    console.log("I am listening...");
+  console.log(`I am listening on ${process.env.IP}:${process.env.PORT}...`);
 });
